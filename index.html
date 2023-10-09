@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Šachovnice</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        body {
+            margin: 25px;
+        }
+
+        table {
+            border-collapse: collapse;
+            border: 1px solid black;
+        }
+
+        td {
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid black;
+            cursor: pointer;
+        }
+
+        .even {
+            background-color: white;
+        }
+
+        .odd {
+            background-color: black;
+        }
+
+        td input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: transparent;
+            font-size: 16px;
+            text-align: center;
+            color: green; /* Zelený text */
+            overflow: hidden; /* Skrývá přetečení textu */
+        }
+
+        h2 {
+            text-align: center;
+            margin: 25px;
+        }
+
+        label {
+            margin: 15px;
+        }
+
+        input {
+            border-radius: 5px;
+            margin: 3px;
+        }
+
+        button {
+            background-color: #000000;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 15px;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<h2>Generátor šachovnice</h2>
+<div class="d-flex justify-content-center">
+    <label for="rows">Počet řádků a sloupců: </label>
+    <input type="number" id="rows" min="1">
+    <br>
+    <input type="number" id="columns" min="1">
+</div>
+<div class="d-flex justify-content-center">
+    <button onclick="generateChessboard()">Generovat šachovnici</button>
+</div>
+<div class="d-flex justify-content-center">
+    <button onclick="addRow()">Přidat řádek</button>
+    <button onclick="deleteRow()">Smazat řádek</button>
+    <button onclick="addColumn()">Přidat sloupec</button>
+    <button onclick="deleteColumn()">Smazat sloupec</button>
+</div>
+<div class="d-flex justify-content-center">
+    <table id="chessboard"></table>
+</div>
+
+<script>
+    let numRows = 0; //řádky
+    let numCols = 0; //sloupce
+
+    function generateChessboard() {
+        const rows = parseInt(document.getElementById("rows").value);
+        const columns = parseInt(document.getElementById("columns").value);
+        const chessboard = document.getElementById("chessboard");
+
+        let html = "";
+        let counter = 1;
+
+        numRows = rows;
+        numCols = columns;
+
+        for (let i = 0; i < rows; i++) {
+            html += "<tr>";
+            for (let j = 0; j < columns; j++) {
+                const cellClass = (i + j) % 2 === 0 ? "even" : "odd";
+                html += `<td class="${cellClass}" id="cell${counter}" onclick="editCell(${counter})"><input type="text" value="${counter}" onblur="checkCell(${counter})"></td>`;
+                counter++;
+            }
+            html += "</tr>";
+        }
+
+        chessboard.innerHTML = html;
+    }
+
+    function editCell(cellNumber) {
+        const inputCell = document.getElementById("cell" + cellNumber).querySelector("input");
+        inputCell.focus();
+    }
+
+    function checkCell(cellNumber) {
+        const inputCell = document.getElementById("cell" + cellNumber).querySelector("input");
+        const cellText = inputCell.value.trim();
+
+        if (cellText === "") {
+            alert("Buňka nemůže být prázdná.");
+            inputCell.value = cellNumber;
+        }
+
+ 
+    }
+
+    function addRow() {
+        const chessboard = document.getElementById("chessboard");
+        const newRow = document.createElement("tr");
+        let counter = numRows * numCols + 1;
+
+        for (let j = 0; j < numCols; j++) {
+            const cellClass = (numRows + j) % 2 === 0 ? "even" : "odd";
+            const newCell = document.createElement("td");
+            newCell.className = cellClass;
+            newCell.id = "cell" + counter;
+            newCell.innerHTML = `<input type="text" value="${counter}" onblur="checkCell(${counter})">`;
+            newRow.appendChild(newCell);
+            counter++;
+        }
+
+        chessboard.appendChild(newRow);
+        numRows++;
+    }
+
+    function deleteRow() {
+        if (numRows > 1) {
+            const chessboard = document.getElementById("chessboard");
+            chessboard.deleteRow(-1); // Smazat poslední řádek
+            numRows--;
+        }
+    }
+
+    function addColumn() {
+        const chessboard = document.getElementById("chessboard");
+        const rows = chessboard.rows;
+
+        for (let i = 0; i < numRows; i++) {
+            const cellClass = (i + numCols) % 2 === 0 ? "even" : "odd";
+            const newCell = document.createElement("td");
+            newCell.className = cellClass;
+            newCell.id = "cell" + (numCols * numRows + i + 1);
+            newCell.innerHTML = `<input type="text" value="${numCols * numRows + i + 1}" onblur="checkCell(${numCols * numRows + i + 1})">`;
+
+            rows[i].appendChild(newCell);
+        }
+
+        numCols++;
+    }
+
+    function deleteColumn() {
+        if (numCols > 1) {
+            const chessboard = document.getElementById("chessboard");
+            const rows = chessboard.rows;
+
+            for (let i = 0; i < numRows; i++) {
+                rows[i].deleteCell(-1); // Smazat poslední buňku ve všech řádcích
+            }
+
+            numCols--;
+        }
+    }
+</script>
+</body>
+</html>
